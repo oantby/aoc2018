@@ -77,6 +77,7 @@ struct Track {
 };
 
 map<int, map<int, Track> > tracks;
+set<Cart *> carts;
 
 int main(int argc, char *argv[]) {
 	ifstream f;
@@ -93,11 +94,13 @@ int main(int argc, char *argv[]) {
 			if (s[j] == '<' || s[j] == '>') {
 				tracks[i][j].type = '-';
 				tracks[i][j].cart = new Cart(s[j]);
+				carts.insert(tracks[i][j].cart);
 				tracks[i][j - 1].right = &tracks[i][j];
 				tracks[i][j].left = &tracks[i][j - 1];
 			} else if (s[j] == 'v' || s[j] == '^') {
 				tracks[i][j].type = '|';
 				tracks[i][j].cart = new Cart(s[j]);
+				carts.insert(tracks[i][j].cart);
 				tracks[i - 1][j].down = &tracks[i][j];
 				tracks[i][j].up = &tracks[i - 1][j];
 			} else if (s[j] == '|') {
@@ -142,13 +145,30 @@ int main(int argc, char *argv[]) {
 		i++;
 	}
 	
+	int cCount, n;
+	cCount = n = carts.size();
 	for (i = 0; i > -1; i++) {
-		try {
-			step();
-		} catch (Crash e) {
-			cout << "Crash: " << e.message << "\non iteration " << i + 1 << endl;
+		step();
+		n = carts.size();
+		if (n != cCount) {
+			cCount = n;
+			cout << "Reduced to " << cCount << " carts" << endl;
+		}
+		if (carts.size() == 1) {
 			break;
 		}
+	}
+	
+	bool gotIt = false;
+	for (i = 0; i < 150; i++) {
+		for (int j = 0; j < 150; j++) {
+			if (tracks[i][j].cart) {
+				cout << "Last cart is at " << j << ',' << i << endl;
+				gotIt = true;
+				break;
+			}
+		}
+		if (gotIt) break;
 	}
 	
 	
@@ -214,7 +234,13 @@ void step() {
 					break;
 			}
 			if ((newSpot->cart)) {
-				throw Crash(newi, newj);
+				carts.erase(newSpot->cart);
+				carts.erase(c);
+				delete newSpot->cart;
+				newSpot->cart = NULL;
+				delete c;
+				tracks[i][j].cart = NULL;
+				continue;
 			}
 			
 			newSpot->cart = tracks[i][j].cart;
