@@ -1,13 +1,15 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <algorithm>
 
 using namespace std;
 
 vector<uint8_t> rs;
 
 int main(int argc, char *argv[]) {
-	int k = 2018;
+	int k = 360781;
+	const vector<uint8_t> in{3,6,0,7,8,1};
 	int e = 2;
 	map<int, size_t> curs;
 	rs = vector<uint8_t>{3, 7};
@@ -16,7 +18,7 @@ int main(int argc, char *argv[]) {
 		curs[i] = i;
 	}
 	
-	while (rs.size() < k + 10) {
+	for (int i = 0; i < 50000000; i++) {
 		int total = 0;
 		for (int j = 0; j < e; j++) {
 			total += rs[curs[j]];
@@ -35,11 +37,11 @@ int main(int argc, char *argv[]) {
 			curs[j] %= count;
 		}
 	}
-	
-	for (int i = 0; i < rs.size(); i++) {
-		cout << (int)rs[i];
+	auto it = search(rs.begin(), rs.end(), in.begin(), in.end());
+	if (it == rs.end()) {
+		cerr << "Not found" << endl;
+	} else {
+		cout << (it - rs.begin()) << " recipes" << endl;
 	}
-	cout << endl;
-	
 	return 0;
 }
